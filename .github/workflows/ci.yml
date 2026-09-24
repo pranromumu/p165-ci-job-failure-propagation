@@ -36,7 +36,7 @@ jobs:
   report:
     needs: test
     # THE MAGIC TRICK: Run this job even if the 'test' job failed!
-    if: ${{ always() }}
+    
     runs-on: ubuntu-latest
     steps:
       - name: Generate Report
