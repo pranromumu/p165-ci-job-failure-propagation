@@ -1,0 +1,43 @@
+name: CI Job Failure Propagation
+
+on: [push]
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run Prepare Tests
+        run: pytest tests/test_prepare.py -v -s
+
+  test:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run Main Tests
+        # This will fail because test_main.py has an intentional error
+        run: pytest tests/test_main.py -v -s
+
+  report:
+    needs: test
+    # THE MAGIC TRICK: Run this job even if the 'test' job failed!
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Report
+        run: echo "Report job executed successfully, collecting evidence..."
